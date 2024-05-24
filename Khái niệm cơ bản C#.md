@@ -748,3 +748,353 @@ public class Car : IMovable {
    }
 }
 ```
+
+### **Design patterns**
+
+### 12. Creational Patterns (Mẫu khởi tạo)
+
+#### Singleton
+
+Đảm bảo rằng một lớp chỉ có một thể hiện duy nhất và cung cấp một điểm truy cập toàn cục đến nó.
+
+```csharp
+public class Singleton {
+    private static Singleton _instance;
+    private static readonly object _lock = new object();
+
+    private Singleton() {}
+
+    public static Singleton Instance {
+        get {
+            if (_instance == null) {
+                lock (_lock) {
+                    if (_instance == null) {
+                        _instance = new Singleton();
+                    }
+                }
+            }
+            return _instance;
+        }
+    }
+}
+```
+
+#### Factory Method
+
+Cung cấp một giao diện để tạo đối tượng, cho phép các lớp con quyết định việc tạo đối tượng nào.
+
+```csharp
+public abstract class Creator {
+    public abstract IProduct FactoryMethod();
+
+    public string SomeOperation() {
+        var product = FactoryMethod();
+        return "Creator: " + product.Operation();
+    }
+}
+
+public class ConcreteCreatorA : Creator {
+    public override IProduct FactoryMethod() {
+        return new ConcreteProductA();
+    }
+}
+
+public interface IProduct {
+    string Operation();
+}
+
+public class ConcreteProductA : IProduct {
+    public string Operation() {
+        return "Result of ConcreteProductA";
+    }
+}
+```
+
+#### Abstract Factory
+
+Cung cấp một giao diện để tạo ra các đối tượng thuộc các họ liên quan hoặc phụ thuộc mà không cần chỉ định lớp cụ thể của chúng.
+
+```csharp
+public interface IAbstractFactory {
+    IAbstractProductA CreateProductA();
+    IAbstractProductB CreateProductB();
+}
+
+public class ConcreteFactory1 : IAbstractFactory {
+    public IAbstractProductA CreateProductA() {
+        return new ConcreteProductA1();
+    }
+
+    public IAbstractProductB CreateProductB() {
+        return new ConcreteProductB1();
+    }
+}
+
+public interface IAbstractProductA {
+    string UsefulFunctionA();
+}
+
+public class ConcreteProductA1 : IAbstractProductA {
+    public string UsefulFunctionA() {
+        return "The result of the product A1.";
+    }
+}
+
+public interface IAbstractProductB {
+    string UsefulFunctionB();
+}
+
+public class ConcreteProductB1 : IAbstractProductB {
+    public string UsefulFunctionB() {
+        return "The result of the product B1.";
+    }
+}
+```
+
+### 13. Structural Patterns (Mẫu cấu trúc)
+
+#### Adapter
+
+Cho phép các lớp có giao diện không tương thích làm việc cùng nhau bằng cách chuyển đổi giao diện của một lớp thành một giao diện khác mà một client mong đợi.
+
+```csharp
+public interface ITarget {
+    string GetRequest();
+}
+
+public class Adaptee {
+    public string GetSpecificRequest() {
+        return "Specific request.";
+    }
+}
+
+public class Adapter : ITarget {
+    private readonly Adaptee _adaptee;
+
+    public Adapter(Adaptee adaptee) {
+        this._adaptee = adaptee;
+    }
+
+    public string GetRequest() {
+        return $"This is '{this._adaptee.GetSpecificRequest()}'";
+    }
+}
+```
+
+#### Composite
+
+Kết hợp các đối tượng thành cấu trúc cây để biểu diễn hệ thống phân cấp bộ phận-toàn thể.
+
+```csharp
+public abstract class Component {
+    public abstract void Operation();
+}
+
+public class Leaf : Component {
+    public override void Operation() {
+        Console.WriteLine("Leaf Operation");
+    }
+}
+
+public class Composite : Component {
+    private List<Component> _children = new List<Component>();
+
+    public void Add(Component component) {
+        _children.Add(component);
+    }
+
+    public void Remove(Component component) {
+        _children.Remove(component);
+    }
+
+    public override void Operation() {
+        Console.WriteLine("Composite Operation");
+        foreach (var child in _children) {
+            child.Operation();
+        }
+    }
+}
+```
+
+#### Decorator
+
+Dynamically thêm hành vi bổ sung cho một đối tượng bằng cách bao bọc nó trong một đối tượng decorator.
+
+```csharp
+public abstract class Component {
+    public abstract string Operation();
+}
+
+public class ConcreteComponent : Component {
+    public override string Operation() {
+        return "ConcreteComponent";
+    }
+}
+
+public abstract class Decorator : Component {
+    protected Component _component;
+
+    public Decorator(Component component) {
+        this._component = component;
+    }
+
+    public void SetComponent(Component component) {
+        this._component = component;
+    }
+
+    public override string Operation() {
+        if (this._component != null) {
+            return _component.Operation();
+        } else {
+            return string.Empty;
+        }
+    }
+}
+
+public class ConcreteDecoratorA : Decorator {
+    public ConcreteDecoratorA(Component comp) : base(comp) { }
+
+    public override string Operation() {
+        return $"ConcreteDecoratorA({base.Operation()})";
+    }
+}
+```
+
+### 14. Behavioral Patterns (Mẫu hành vi)
+
+#### Observer
+
+Định nghĩa một sự phụ thuộc một-nhiều giữa các đối tượng, sao cho khi một đối tượng thay đổi trạng thái, tất cả các phụ thuộc của nó đều được thông báo và cập nhật tự động.
+
+```csharp
+public interface IObserver {
+    void Update(ISubject subject);
+}
+
+public interface ISubject {
+    void Attach(IObserver observer);
+    void Detach(IObserver observer);
+    void Notify();
+}
+
+public class ConcreteSubject : ISubject {
+    public int State { get; set; } = -0;
+
+    private List<IObserver> _observers = new List<IObserver>();
+
+    public void Attach(IObserver observer) {
+        Console.WriteLine("Subject: Attached an observer.");
+        this._observers.Add(observer);
+    }
+
+    public void Detach(IObserver observer) {
+        this._observers.Remove(observer);
+        Console.WriteLine("Subject: Detached an observer.");
+    }
+
+    public void Notify() {
+        Console.WriteLine("Subject: Notifying observers...");
+        foreach (var observer in _observers) {
+            observer.Update(this);
+        }
+    }
+
+    public void SomeBusinessLogic() {
+        Console.WriteLine("\nSubject: I'm doing something important.");
+        this.State = new Random().Next(0, 10);
+        Console.WriteLine("Subject: My state has just changed to: " + this.State);
+        this.Notify();
+    }
+}
+
+public class ConcreteObserverA : IObserver {
+    public void Update(ISubject subject) {
+        if ((subject as ConcreteSubject).State < 3) {
+            Console.WriteLine("ConcreteObserverA: Reacted to the event.");
+        }
+    }
+}
+```
+
+#### Command
+
+Đóng gói một yêu cầu dưới dạng một đối tượng, cho phép bạn tham số hóa khách hàng với các yêu cầu khác nhau, hàng đợi hoặc ghi nhật ký các yêu cầu, và hỗ trợ các thao tác có thể hoàn tác.
+
+```csharp
+public interface ICommand {
+    void Execute();
+}
+
+public class SimpleCommand : ICommand {
+    private string _payload;
+
+    public SimpleCommand(string payload) {
+        this._payload = payload;
+    }
+
+    public void Execute() {
+        Console.WriteLine($"SimpleCommand: See, I can do simple things like printing ({this._payload})");
+    }
+}
+
+public class ComplexCommand : ICommand {
+    private Receiver _receiver;
+
+    private string _a;
+
+    private string _b;
+
+    public ComplexCommand(Receiver receiver, string a, string b) {
+        this._receiver = receiver;
+        this._a = a;
+        this._b = b;
+    }
+
+    public void Execute() {
+        Console.WriteLine("ComplexCommand: Complex stuff should be done by a receiver object.");
+        this._receiver.DoSomething(this._a);
+        this._receiver.DoSomethingElse(this._b);
+    }
+}
+
+public class Receiver {
+    public void DoSomething(string a) {
+        Console.WriteLine($"Receiver: Working on ({a}.)");
+    }
+
+    public void DoSomethingElse(string b) {
+        Console.WriteLine($"Receiver: Also working on ({b}.)");
+    }
+}
+
+public class Invoker {
+    private ICommand _onStart;
+    private ICommand _onFinish;
+
+    public void SetOnStart(ICommand command) {
+        this._onStart = command;
+    }
+
+    public void SetOnFinish(ICommand command) {
+        this._onFinish = command;
+    }
+
+    public void DoSomethingImportant() {
+        Console.WriteLine("Invoker: Does anybody want something done before I begin?");
+        if (this._onStart is ICommand) {
+            this._onStart.Execute();
+        }
+
+        Console.WriteLine("Invoker: ...doing something really important...");
+
+        Console.WriteLine("Invoker: Does anybody want something done after I finish?");
+        if (this._onFinish is ICommand) {
+            this._onFinish.Execute();
+        }
+    }
+}
+```
+
+#### Tổng Kết
+
+Các design patterns trên chỉ là một phần nhỏ trong số rất nhiều mẫu thiết kế có sẵn. Chúng được thiết kế để giải quyết các vấn đề phổ biến và mang lại các giải pháp tái sử dụng, linh hoạt, và dễ bảo trì. Hiểu và áp dụng các mẫu thiết kế này trong C# sẽ giúp bạn trở thành một lập trình viên hiệu quả hơn và xây dựng các ứng dụng chất lượng cao.

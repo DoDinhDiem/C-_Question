@@ -831,4 +831,193 @@ mà trong đó một ứng dụng lớn được chia thành các dịch vụ nh
 5. **.NET MAUI là gì?**
    - **Trả lời:** .NET MAUI (Multi-platform App UI) là một framework đa nền tảng cho phép xây dựng các ứng dụng di động, desktop, và web từ một codebase duy nhất. .NET MAUI là sự phát triển tiếp theo của Xamarin.Forms và hỗ trợ nhiều nền tảng như Android, iOS, macOS, và Windows.
 
+### Câu hỏi và trả lời mẫu về Design Patterns
+
+#### 1. Singleton Pattern
+
+**Câu hỏi**: Hãy giải thích Singleton Pattern và cách triển khai nó trong C#.
+
+**Trả lời**:
+Singleton Pattern đảm bảo rằng một lớp chỉ có một thể hiện duy nhất và cung cấp một điểm truy cập toàn cục đến thể hiện đó. Cách triển khai điển hình trong C#:
+
+```csharp
+public class Singleton {
+    private static Singleton _instance;
+    private static readonly object _lock = new object();
+
+    private Singleton() {}
+
+    public static Singleton Instance {
+        get {
+            if (_instance == null) {
+                lock (_lock) {
+                    if (_instance == null) {
+                        _instance = new Singleton();
+                    }
+                }
+            }
+            return _instance;
+        }
+    }
+}
+```
+
+#### 2. Factory Method Pattern
+
+**Câu hỏi**: Hãy mô tả Factory Method Pattern và đưa ra một ví dụ triển khai nó trong C#.
+
+**Trả lời**:
+Factory Method Pattern cung cấp một giao diện để tạo đối tượng, cho phép các lớp con quyết định việc tạo đối tượng nào. Ví dụ triển khai:
+
+```csharp
+public abstract class Creator {
+    public abstract IProduct FactoryMethod();
+
+    public string SomeOperation() {
+        var product = FactoryMethod();
+        return "Creator: " + product.Operation();
+    }
+}
+
+public class ConcreteCreatorA : Creator {
+    public override IProduct FactoryMethod() {
+        return new ConcreteProductA();
+    }
+}
+
+public interface IProduct {
+    string Operation();
+}
+
+public class ConcreteProductA : IProduct {
+    public string Operation() {
+        return "Result of ConcreteProductA";
+    }
+}
+```
+
+#### 3. Observer Pattern
+
+**Câu hỏi**: Hãy giải thích Observer Pattern và khi nào nên sử dụng nó?
+
+**Trả lời**:
+Observer Pattern định nghĩa một sự phụ thuộc một-nhiều giữa các đối tượng, sao cho khi một đối tượng thay đổi trạng thái, tất cả các phụ thuộc của nó đều được thông báo và cập nhật tự động. Nó thường được sử dụng trong các hệ thống sự kiện, như hệ thống thông báo thay đổi trạng thái của đối tượng trong mô hình MVC.
+
+#### 4. Decorator Pattern
+
+**Câu hỏi**: Hãy mô tả Decorator Pattern và đưa ra một ví dụ về cách triển khai nó.
+
+**Trả lời**:
+Decorator Pattern cho phép thêm hành vi bổ sung cho một đối tượng bằng cách bao bọc nó trong một đối tượng decorator. Ví dụ triển khai:
+
+```csharp
+public abstract class Component {
+    public abstract string Operation();
+}
+
+public class ConcreteComponent : Component {
+    public override string Operation() {
+        return "ConcreteComponent";
+    }
+}
+
+public abstract class Decorator : Component {
+    protected Component _component;
+
+    public Decorator(Component component) {
+        this._component = component;
+    }
+
+    public override string Operation() {
+        return _component != null ? _component.Operation() : string.Empty;
+    }
+}
+
+public class ConcreteDecoratorA : Decorator {
+    public ConcreteDecoratorA(Component comp) : base(comp) { }
+
+    public override string Operation() {
+        return $"ConcreteDecoratorA({base.Operation()})";
+    }
+}
+```
+
+#### 5. Strategy Pattern
+
+**Câu hỏi**: Hãy giải thích Strategy Pattern và cung cấp một ví dụ về cách triển khai nó trong C#.
+
+**Trả lời**:
+Strategy Pattern định nghĩa một họ các thuật toán, đóng gói từng thuật toán lại, và làm cho chúng có thể thay thế cho nhau. Ví dụ triển khai:
+
+```csharp
+public interface IStrategy {
+    object DoAlgorithm(object data);
+}
+
+public class ConcreteStrategyA : IStrategy {
+    public object DoAlgorithm(object data) {
+        return "ConcreteStrategyA";
+    }
+}
+
+public class ConcreteStrategyB : IStrategy {
+    public object DoAlgorithm(object data) {
+        return "ConcreteStrategyB";
+    }
+}
+
+public class Context {
+    private IStrategy _strategy;
+
+    public Context(IStrategy strategy) {
+        this._strategy = strategy;
+    }
+
+    public void SetStrategy(IStrategy strategy) {
+        this._strategy = strategy;
+    }
+
+    public void DoSomeBusinessLogic() {
+        Console.WriteLine("Context: Sorting data using the strategy (not sure how it'll do it)");
+        var result = _strategy.DoAlgorithm(new object());
+        Console.WriteLine(result);
+    }
+}
+```
+
+#### 6. Adapter Pattern
+
+**Câu hỏi**: Hãy mô tả Adapter Pattern và cung cấp một ví dụ về cách triển khai nó trong C#.
+
+**Trả lời**:
+Adapter Pattern cho phép các lớp có giao diện không tương thích làm việc cùng nhau bằng cách chuyển đổi giao diện của một lớp thành một giao diện khác mà một client mong đợi. Ví dụ triển khai:
+
+```csharp
+public interface ITarget {
+    string GetRequest();
+}
+
+public class Adaptee {
+    public string GetSpecificRequest() {
+        return "Specific request.";
+    }
+}
+
+public class Adapter : ITarget {
+    private readonly Adaptee _adaptee;
+
+    public Adapter(Adaptee adaptee) {
+        this._adaptee = adaptee;
+    }
+
+    public string GetRequest() {
+        return $"This is '{this._adaptee.GetSpecificRequest()}'";
+    }
+}
+```
+
+### Tổng Kết
+
+Hiểu rõ và biết cách triển khai các design patterns là một kỹ năng quan trọng giúp bạn xây dựng các ứng dụng phần mềm mạnh mẽ, linh hoạt và dễ bảo trì. Trong các cuộc phỏng vấn, bạn nên chuẩn bị sẵn sàng để giải thích các mẫu thiết kế, cách triển khai chúng trong C#, và tình huống nào thích hợp để sử dụng mỗi mẫu thiết kế. Điều này sẽ giúp bạn thể hiện kiến thức chuyên sâu và khả năng áp dụng thực tế của mình trong lập trình.
+
 Hy vọng rằng danh sách các câu hỏi và câu trả lời này sẽ giúp bạn chuẩn bị tốt cho các cuộc phỏng vấn về .NET. Nếu bạn cần thêm thông tin hoặc có câu hỏi khác, hãy để tôi biết!
