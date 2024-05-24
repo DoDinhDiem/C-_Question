@@ -1136,3 +1136,234 @@ public class Adapter : ITarget {
 Hiểu rõ và biết cách triển khai các design patterns là một kỹ năng quan trọng giúp bạn xây dựng các ứng dụng phần mềm mạnh mẽ, linh hoạt và dễ bảo trì. Trong các cuộc phỏng vấn, bạn nên chuẩn bị sẵn sàng để giải thích các mẫu thiết kế, cách triển khai chúng trong C#, và tình huống nào thích hợp để sử dụng mỗi mẫu thiết kế. Điều này sẽ giúp bạn thể hiện kiến thức chuyên sâu và khả năng áp dụng thực tế của mình trong lập trình.
 
 Hy vọng rằng danh sách các câu hỏi và câu trả lời này sẽ giúp bạn chuẩn bị tốt cho các cuộc phỏng vấn về .NET. Nếu bạn cần thêm thông tin hoặc có câu hỏi khác, hãy để tôi biết!
+
+### Xác thực và bảo mật
+
+Khi tham gia phỏng vấn cho các vị trí phát triển phần mềm, đặc biệt là những vị trí liên quan đến bảo mật và xác thực, bạn có thể gặp các câu hỏi liên quan đến JWT, Authentication, và Authorization. Dưới đây là một số câu hỏi phổ biến và câu trả lời mẫu để bạn tham khảo:
+
+### Câu hỏi và câu trả lời mẫu
+
+#### 1. JWT là gì và cấu trúc của nó như thế nào?
+
+**Câu hỏi**: JWT là gì và nó bao gồm những phần nào?
+
+**Trả lời**:
+JWT (JSON Web Token) là một chuẩn mở để truyền thông tin giữa các bên dưới dạng đối tượng JSON một cách an toàn. JWT bao gồm ba phần chính:
+
+- **Header**: Chứa thông tin về loại token và thuật toán ký (ví dụ: HMAC, SHA256).
+- **Payload**: Chứa các thông tin (claims) mà bạn muốn truyền tải, ví dụ như user ID, roles.
+- **Signature**: Được tạo bằng cách mã hóa header và payload với một khóa bí mật hoặc khóa riêng tư. Signature dùng để xác minh tính toàn vẹn của token và đảm bảo rằng token không bị thay đổi.
+
+Cấu trúc của JWT là: `header.payload.signature`.
+
+#### 2. Sự khác biệt giữa Authentication và Authorization là gì?
+
+**Câu hỏi**: Authentication và Authorization khác nhau như thế nào?
+
+**Trả lời**:
+
+- **Authentication** (Xác thực): Quá trình xác minh danh tính của người dùng. Nó đảm bảo rằng người dùng là ai mà họ tuyên bố.
+- **Authorization** (Ủy quyền): Quá trình xác định những gì người dùng được phép làm sau khi đã xác thực. Nó kiểm tra quyền truy cập của người dùng vào các tài nguyên và hành động cụ thể.
+
+#### 3. Làm thế nào để tạo JWT trong C#?
+
+**Câu hỏi**: Hãy mô tả cách tạo JWT trong C#.
+
+**Trả lời**:
+Bạn có thể sử dụng thư viện `System.IdentityModel.Tokens.Jwt` để tạo JWT trong C#. Dưới đây là một ví dụ:
+
+```csharp
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+
+public string GenerateJwtToken(string username, string secretKey) {
+    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+    var claims = new[] {
+        new Claim(JwtRegisteredClaimNames.Sub, username),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+    var token = new JwtSecurityToken(
+        issuer: "yourdomain.com",
+        audience: "yourdomain.com",
+        claims: claims,
+        expires: DateTime.Now.AddMinutes(120),
+        signingCredentials: credentials);
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
+```
+
+#### 4. Làm thế nào để xác thực JWT trong C#?
+
+**Câu hỏi**: Hãy mô tả cách xác thực JWT trong C#.
+
+**Trả lời**:
+Để xác thực JWT, bạn cần kiểm tra tính hợp lệ của token, bao gồm chữ ký và các claims. Dưới đây là ví dụ về cách làm điều này:
+
+```csharp
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+
+public ClaimsPrincipal ValidateJwtToken(string token, string secretKey) {
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var key = Encoding.ASCII.GetBytes(secretKey);
+    var validationParameters = new TokenValidationParameters {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "yourdomain.com",
+        ValidAudience = "yourdomain.com",
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+
+    try {
+        var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+        return principal;
+    } catch {
+        return null;
+    }
+}
+```
+
+#### 5. Làm thế nào để triển khai JWT Authentication trong ASP.NET Core?
+
+**Câu hỏi**: Hãy mô tả cách triển khai JWT Authentication trong một ứng dụng ASP.NET Core.
+
+**Trả lời**:
+Bạn có thể cấu hình JWT Authentication trong `Startup.cs` của một ứng dụng ASP.NET Core:
+
+```csharp
+public void ConfigureServices(IServiceCollection services) {
+    var key = Encoding.ASCII.GetBytes("your_secret_key_here");
+
+    services.AddAuthentication(x => {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x => {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = "yourdomain.com",
+            ValidAudience = "yourdomain.com"
+        };
+    });
+
+    services.AddControllers();
+}
+
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+    if (env.IsDevelopment()) {
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseRouting();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.UseEndpoints(endpoints => {
+        endpoints.MapControllers();
+    });
+}
+```
+
+#### 6. Refresh Token là gì và làm thế nào để sử dụng nó cùng với JWT?
+
+**Câu hỏi**: Refresh Token là gì và làm thế nào để sử dụng nó trong hệ thống xác thực JWT?
+
+**Trả lời**:
+Refresh Token là một token dài hạn được sử dụng để lấy một JWT mới khi JWT hiện tại hết hạn. Refresh Token thường được lưu trữ an toàn trên client và gửi đến server để yêu cầu một JWT mới. Quá trình này giúp giảm nguy cơ tấn công nếu JWT bị đánh cắp vì JWT có thời hạn ngắn.
+
+Dưới đây là một ví dụ về việc sử dụng Refresh Token:
+
+- Khi user đăng nhập, server trả về cả JWT và Refresh Token.
+- Khi JWT hết hạn, client gửi Refresh Token để lấy JWT mới.
+
+Server lưu Refresh Token trong cơ sở dữ liệu và kiểm tra tính hợp lệ của nó trước khi cấp JWT mới.
+
+#### 7. Làm thế nào để bảo vệ JWT khỏi các tấn công phổ biến?
+
+**Câu hỏi**: Bạn sẽ làm gì để bảo vệ JWT khỏi các tấn công phổ biến?
+
+**Trả lời**:
+
+- **Sử dụng HTTPS**: Đảm bảo rằng tất cả các giao tiếp sử dụng JWT đều qua HTTPS để tránh bị đánh cắp token.
+- **Ký và mã hóa token**: Sử dụng thuật toán ký mạnh (như HMAC SHA256) và cân nhắc mã hóa nội dung quan trọng trong payload.
+- **Thiết lập thời hạn sống ngắn cho JWT**: JWT nên có thời hạn sống ngắn và sử dụng Refresh Token để gia hạn.
+- **Xác thực token trên server**: Kiểm tra chữ ký và các claims của JWT mỗi khi nhận được.
+- **Lưu trữ an toàn trên client**: Tránh lưu trữ JWT trong localStorage, thay vào đó sử dụng secure cookies.
+- **Theo dõi và hủy bỏ token**: Cung cấp cơ chế để hủy bỏ token nếu phát hiện có sự cố.
+
+#### 8. Làm thế nào để xử lý JWT khi user đăng xuất?
+
+**Câu hỏi**: Bạn sẽ xử lý JWT như thế nào khi user đăng xuất?
+
+**Trả lời**:
+Khi user đăng xuất, bạn cần làm cho JWT hiện tại không còn hiệu lực. Điều này có thể thực hiện bằng cách:
+
+- Xóa JWT từ client (nếu lưu trong cookies hoặc localStorage).
+- Sử dụng cơ chế blacklist token trên server để không chấp nhận các token đã bị hủy.
+- Nếu sử dụng Refresh Token, xóa Refresh Token khỏi cơ sở dữ liệu để không cấp phát JWT mới cho user đó.
+
+#### 9. Làm thế nào để triển khai phân quyền (authorization) dựa trên JWT trong ASP.NET Core?
+
+**Câu hỏi**: Hãy mô tả cách triển khai phân quyền dựa trên JWT trong một ứng dụng ASP.NET Core.
+
+**Trả lời**:
+Bạn có thể sử dụng các policies và claims để triển khai phân quyền trong ASP.NET Core. Dưới đây là một ví dụ:
+
+```csharp
+public void ConfigureServices(IServiceCollection services) {
+    var key = Encoding.ASCII.GetBytes("your_secret_key_here");
+
+    services.AddAuthentication(x => {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x => {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = "yourdomain.com",
+            ValidAudience = "yourdomain.com"
+        };
+    });
+
+    services.AddAuthorization(options => {
+        options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("Admin"));
+    });
+
+    services.AddControllers();
+}
+
+[Authorize(Policy = "AdminPolicy")]
+[ApiController]
+[Route("api/[controller]")]
+public class AdminController : ControllerBase {
+    // Your admin actions here
+}
+```
+
+### Tổng Kết
+
+Hiểu rõ về JWT, Authentication, và Authorization cùng với cách triển
+
+khai chúng trong C# sẽ giúp bạn tự tin hơn khi tham gia phỏng vấn. Chuẩn bị kỹ lưỡng cho các câu hỏi trên sẽ giúp bạn thể hiện sự hiểu biết sâu sắc và khả năng áp dụng chúng vào các dự án thực tế.
