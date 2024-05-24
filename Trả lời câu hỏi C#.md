@@ -125,18 +125,133 @@
 
 4. **Giải thích cách sử dụng `GroupBy` trong LINQ.**
 
-   ```csharp
-   var grouped = numbers.GroupBy(n => n % 2 == 0 ? "Even" : "Odd");
+   Trong LINQ (Language Integrated Query), `GroupBy` được sử dụng để nhóm các phần tử của một tập hợp theo một hoặc nhiều tiêu chí. `GroupBy` tạo ra một tập hợp các nhóm, mỗi nhóm chứa các phần tử có cùng giá trị cho tiêu chí đã chọn.
 
-   foreach (var group in grouped)
-   {
-       Console.WriteLine(group.Key);
-       foreach (var number in group)
-       {
-           Console.WriteLine(number);
-       }
-   }
-   ```
+Cách Sử Dụng `GroupBy` trong LINQ
+
+**Nhóm theo một tiêu chí**:
+
+- Bạn có thể nhóm các phần tử của một tập hợp theo một tiêu chí cụ thể, chẳng hạn như một thuộc tính của đối tượng.
+
+**Nhóm theo nhiều tiêu chí**:
+
+- Bạn cũng có thể nhóm theo nhiều tiêu chí bằng cách sử dụng các anonymous types (kiểu vô danh).
+
+**Thực hiện các phép toán trên các nhóm**:
+
+- Sau khi nhóm, bạn có thể thực hiện các phép toán trên từng nhóm, chẳng hạn như tính tổng, đếm số phần tử, v.v.
+
+#### Ví Dụ Cụ Thể
+
+##### Nhóm Theo Một Tiêu Chí
+
+Giả sử bạn có một danh sách các sinh viên và muốn nhóm họ theo lớp học của họ:
+
+```csharp
+public class Student {
+    public string Name { get; set; }
+    public string Class { get; set; }
+}
+
+var students = new List<Student> {
+    new Student { Name = "John", Class = "Math" },
+    new Student { Name = "Jane", Class = "Science" },
+    new Student { Name = "Jake", Class = "Math" },
+    new Student { Name = "Jessie", Class = "Science" },
+    new Student { Name = "Joan", Class = "Math" }
+};
+
+var groupedStudents = students.GroupBy(s => s.Class);
+
+foreach (var group in groupedStudents) {
+    Console.WriteLine($"Class: {group.Key}");
+    foreach (var student in group) {
+        Console.WriteLine($"  Student: {student.Name}");
+    }
+}
+```
+
+Kết quả:
+
+```
+Class: Math
+  Student: John
+  Student: Jake
+  Student: Joan
+Class: Science
+  Student: Jane
+  Student: Jessie
+```
+
+##### Nhóm Theo Nhiều Tiêu Chí
+
+Giả sử bạn muốn nhóm sinh viên theo cả lớp học và một thuộc tính khác (ví dụ: năm học):
+
+```csharp
+public class Student {
+    public string Name { get; set; }
+    public string Class { get; set; }
+    public int Year { get; set; }
+}
+
+var students = new List<Student> {
+    new Student { Name = "John", Class = "Math", Year = 2023 },
+    new Student { Name = "Jane", Class = "Science", Year = 2022 },
+    new Student { Name = "Jake", Class = "Math", Year = 2023 },
+    new Student { Name = "Jessie", Class = "Science", Year = 2023 },
+    new Student { Name = "Joan", Class = "Math", Year = 2022 }
+};
+
+var groupedStudents = students.GroupBy(s => new { s.Class, s.Year });
+
+foreach (var group in groupedStudents) {
+    Console.WriteLine($"Class: {group.Key.Class}, Year: {group.Key.Year}");
+    foreach (var student in group) {
+        Console.WriteLine($"  Student: {student.Name}");
+    }
+}
+```
+
+Kết quả:
+
+```
+Class: Math, Year: 2023
+  Student: John
+  Student: Jake
+Class: Science, Year: 2022
+  Student: Jane
+Class: Science, Year: 2023
+  Student: Jessie
+Class: Math, Year: 2022
+  Student: Joan
+```
+
+##### Thực Hiện Các Phép Toán Trên Các Nhóm
+
+Bạn có thể tính toán trên các nhóm, chẳng hạn như đếm số lượng sinh viên trong mỗi lớp:
+
+```csharp
+var studentCounts = students.GroupBy(s => s.Class)
+                            .Select(g => new {
+                                Class = g.Key,
+                                Count = g.Count()
+                            });
+
+foreach (var item in studentCounts) {
+    Console.WriteLine($"Class: {item.Class}, Count: {item.Count}");
+}
+```
+
+Kết quả:
+
+```
+Class: Math, Count: 3
+Class: Science, Count: 2
+```
+
+##### Tổng Kết
+
+Sử dụng `GroupBy` trong LINQ giúp bạn dễ dàng nhóm và xử lý dữ liệu dựa trên một hoặc nhiều tiêu chí. Bạn có thể thao tác với các nhóm này để thực hiện các phép toán khác nhau, giúp đơn giản hóa và tối ưu hóa mã nguồn của bạn.
 
 5. **Làm thế nào để kết hợp hai tập dữ liệu bằng LINQ (ví dụ: sử dụng `Join`)?**
 
